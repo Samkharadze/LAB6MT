@@ -30,7 +30,7 @@ void hashing()
 
 void init()
 {
-    vel
+   
     boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("austerity");
 
     //Логирование
