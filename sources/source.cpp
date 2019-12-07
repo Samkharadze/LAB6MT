@@ -13,7 +13,7 @@ int main(int argc, char*argv[])
     size_t count_threads = 2;
     if (argc > 1)
         count_threads =
-boost::lexical_cast<size_t>(argv[1]); 
+boost::lexical_cast<size_t>(argv[1]);
 //преобразование в size_t
     boost::log::add_file_log("Log.log");//вывод в файл
     boost::log::add_console_log(std::cout);//вывод в консоль
