@@ -1,88 +1,30 @@
-#include "../third-party/PicoSHA2/picosha2.h"
-#include <thread>
-#include <cstdlib>
-#include <vector>
-#include <boost/log/trivial.hpp>
+// Copyright 2018 Your Name <your_email>
+
+#include <header.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sinks.hpp>
-#include <boost/log/expressions.hpp>
+#include <thread>
+#include <ctime>
 #include <boost/log/utility/setup.hpp>
-static std::string endChar = "0000";
+#include <vector>
 
-void hashing()
-{
 
-    while (true) 
-	{
-        std::string genstring = std::to_string(std::rand());
-        std::string hash = picosha2::hash256_hex_string(genstring);
-        std::string lastChar = hash.substr(hash.size() - endChar.size());
-        if (lastChar == endChar) 
-		{
-            BOOST_LOG_TRIVIAL(info) << "0000  in hash '" << hash << "' of string '" << genstring << "'";
-        } 
-		else 
-		{
-            BOOST_LOG_TRIVIAL(trace) << "Hash '" << hash << "' get from string'" << genstring << "'";
-        }
-    }
-}
+int main(int argc, char*argv[]) {
+    srand(time(NULL));
 
-void init()
-{
-   
-    boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("austerity");
+    //size_t count_threads = thread::hardware_concurrency();
+    size_t count_threads = 2;
 
-    //Логирование
-    auto ForFileLogger = boost::log::add_file_log(
-            boost::log::keywords::file_name = "../logs/loggerFile_%N.log",
-            boost::log::keywords::rotation_size = 10 * 1024 * 1024,
-            boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point{0, 0, 0},
-            boost::log::keywords::format = "[%TimeStamp%][%austerity%][%ThreadID%]: %Message%"
-    );
-    auto ForConsoleLogger = boost::log::add_console_log(
-            std::cout,
-            boost::log::keywords::format = "[%TimeStamp%][%austerity%][%ThreadID%]: %Message%"
-    );
+    if (argc > 1)
+        count_threads = boost::lexical_cast<size_t>(argv[1]); //преобразование в size_t
 
-    //Фильтрация
-    ForFileLogger->set_filter(
-            boost::log::trivial::severity >= boost::log::trivial::trace
-    );
-    ForConsoleLogger->set_filter(
-            boost::log::trivial::severity >= boost::log::trivial::info
-    );
+    boost::log::add_file_log("Log.log"); //вывод в файл
+    boost::log::add_console_log(std::cout); //вывод в консоль
 
-}
+    std::vector<std::thread> threads;
+    for (size_t i = 0; i < count_threads; ++i)
+    threads.emplace_back(SHA256::getting_a_hash); //создает объект (а не копию) в конце вектора
 
-int main(int argc, char *argv[])
-{
-    srand(time(nullptr));
-    init();
-    boost::log::add_common_attributes();
-
-    size_t threadAmount = 0;
-    if(argc >=2) 
-	{
-        threadAmount = boost::lexical_cast<size_t>(argv[1]);
-    }
-    else 
-	{
-        threadAmount = boost::thread::hardware_concurrency();
-    }
-    BOOST_LOG_TRIVIAL(trace) << "Threads amount: " << threadAmount;
-
-    std::vector<boost::thread> threads;
-    threads.reserve(threadAmount);
-    for (size_t i = 0; i < threadAmount; i++) 
-	{
-        threads.emplace_back(hashing);
-    }
-
-    for (boost::thread &thread : threads)
-	{
+     for (std::thread& thread : threads)
         thread.join();
-    }
 
-    return 0;
 }
