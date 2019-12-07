@@ -19,7 +19,7 @@ boost::lexical_cast<size_t>(argv[1]);
     boost::log::add_console_log(std::cout);//вывод в консоль
     std::vector<std::thread> threads;
     for (size_t i = 0; i < count_threads; ++i)
-    threads.emplace_back(SHA256::getting_a_hash); 
+    threads.emplace_back(SHA256::getting_a_hash);
 //создает объект (а не копию) в конце вектора
 for (std::thread& thread : threads)
         thread.join();
